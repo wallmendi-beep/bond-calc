@@ -785,11 +785,17 @@
 
     // --- [강력해진 전역 키보드 제어] ---
     document.addEventListener('keydown', function(event) {
-        
+        // 숫자키 코드 추출 헬퍼 (Digit1~4, Numpad1~4 모두 지원)
+        function getDigit(code) {
+            if (code.startsWith('Digit')) return code.replace('Digit', '');
+            if (code.startsWith('Numpad')) return code.replace('Numpad', '');
+            return null;
+        }
+
         // 1. Shift + 숫자키 (1~4): 전원 입력 (일괄 반영) — 최우선 처리
-        if (event.shiftKey && !event.altKey && !event.ctrlKey && event.code.startsWith('Digit')) {
-            const num = event.code.replace('Digit', '');
-            if (num >= '1' && num <= '4') {
+        if (event.shiftKey && !event.altKey && !event.ctrlKey) {
+            const num = getDigit(event.code);
+            if (num && num >= '1' && num <= '4') {
                 event.preventDefault();
                 event.stopImmediatePropagation();
                 if(currentMode !== 'B') switchMode('B');
@@ -799,9 +805,9 @@
         }
 
         // 2. Alt + 숫자키 (1~4): 즉시 추가
-        if (event.altKey && event.code.startsWith('Digit')) {
-            const num = event.code.replace('Digit', '');
-            if (num >= '1' && num <= '4') {
+        if (event.altKey) {
+            const num = getDigit(event.code);
+            if (num && num >= '1' && num <= '4') {
                 event.preventDefault();
                 if(currentMode !== 'B') switchMode('B'); 
                 addListFromModeB(parseInt(num));

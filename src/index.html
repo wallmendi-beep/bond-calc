@@ -157,35 +157,35 @@
         .dash-card .val { font-weight: 800; font-size: 20px; color: var(--primary-color); } 
         .dash-card .shortcut { background: var(--text-sub); color: white; padding: 3px 8px; border-radius: 6px; font-size: 12px; font-weight: bold; }
         
-        /* 부담부증여 모드(활성화) 전환 시 분홍색 테마 */
+        /* 부담부증여 모드(활성화) 은은한 파스텔 핑크 테마 */
         .dash-card.active-burden {
-            border-color: #e91e8c;
-            background: #fff0f8;
-            box-shadow: 0 2px 12px rgba(233, 30, 140, 0.2);
+            border-color: #f7a8b8;
+            background: #fdf5f6;
+            box-shadow: 0 2px 10px rgba(247, 168, 184, 0.25);
         }
         [data-theme="dark"] .dash-card.active-burden {
-            background: #4a1a35;
-            border-color: #f48fb1;
-            box-shadow: 0 2px 12px rgba(244, 143, 177, 0.25);
+            background: #3a2228;
+            border-color: #c76f82;
+            box-shadow: 0 2px 10px rgba(199, 111, 130, 0.25);
         }
-        .dash-card.active-burden .title { color: #c2185b; }
-        .dash-card.active-burden .val { color: #c2185b; font-size: 22px; }
+        .dash-card.active-burden .title { color: #d4657a; }
+        .dash-card.active-burden .val { color: #d4657a; font-size: 22px; }
         .dash-card.active-burden .shortcut { 
-            background: #e91e8c; 
+            background: #e68a9c; 
             color: white; 
         }
-        [data-theme="dark"] .dash-card.active-burden .title { color: #f48fb1; }
-        [data-theme="dark"] .dash-card.active-burden .val { color: #f48fb1; }
-        /* 부담부증여 라디오 버튼 분홍 테마 */
+        [data-theme="dark"] .dash-card.active-burden .title { color: #e89eb0; }
+        [data-theme="dark"] .dash-card.active-burden .val { color: #e89eb0; }
+        /* 부담부증여 라디오 버튼 파스텔 핑크 테마 */
         .burden-radio-group .radio-label:has(input:checked) {
-            background-color: #ffe4f0;
-            border-color: #e91e8c;
-            color: #c2185b;
+            background-color: #fdf5f6;
+            border-color: #f7a8b8;
+            color: #d4657a;
         }
         [data-theme="dark"] .burden-radio-group .radio-label:has(input:checked) {
-            background-color: #6b2040;
-            border-color: #f48fb1;
-            color: #f8bbd0;
+            background-color: #3a2228;
+            border-color: #c76f82;
+            color: #e89eb0;
         }
 
         .input-grid { display: flex; flex-wrap: wrap; gap: 15px; }

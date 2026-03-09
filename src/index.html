@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>국민주택채권 계산기 v1.6.2</title>
+    
+    <link rel="icon" type="image/png" href="https://img.icons8.com/color/480/courthouse.png">
+
+    <style>
+        /* --- [테마 설정] --- */
+        :root {
+            --bg-body: #f0f2f5; --bg-box: #ffffff;
+            --text-main: #333333; --text-sub: #555555;
+            --border-color: #dddddd;
+            --primary-color: #0056b3; --accent-color: #28a745; 
+            --radio-bg: #f8f9fa; --radio-item-bg: #ffffff;
+            --radio-checked-bg: #e3f2fd; --radio-checked-text: #0056b3;
+            --input-bg: #ffffff; --input-text: #000000;
+            --result-bg: #e9f2ff; --result-border: #cce0ff; --result-text: #0056b3;
+            --debt-bg: #fff5f5; --debt-border: #ffcccc; --debt-text: #d9534f;
+            --btn-theme-bg: #fff; --btn-theme-text: #333; --btn-theme-border: #ccc;
+            --focus-ring: #2684ff;
+        }
+
+        [data-theme="dark"] {
+            --bg-body: #2b2d30; --bg-box: #3c3f41;
+            --text-main: #e0e0e0; --text-sub: #b0b0b0;
+            --border-color: #555555;
+            --primary-color: #64b5f6; --accent-color: #4caf50;
+            --radio-bg: #2b2d30; --radio-item-bg: #4b4e52;
+            --radio-checked-bg: #64b5f6; --radio-checked-text: #1e1e1e;
+            --input-bg: #2b2d30; --input-text: #ffffff;
+            --result-bg: #253341; --result-border: #4a76a8; --result-text: #90caf9;
+            --debt-bg: #4a2c2c; --debt-border: #8c4646; --debt-text: #ffab91;
+            --btn-theme-bg: #3c3f41; --btn-theme-text: #eee; --btn-theme-border: #555;
+            --focus-ring: #64b5f6;
+        }
+
+        /* --- [레이아웃 & 스크롤] --- */
+        body { 
+            font-family: 'Pretendard', 'Malgun Gothic', sans-serif; 
+            background-color: var(--bg-body); color: var(--text-main);
+            margin: 0; padding: 20px;
+            display: flex; flex-direction: column; align-items: center; 
+            box-sizing: border-box;
+            min-height: 100vh; 
+            overflow-y: auto; overflow-x: hidden; 
+        }
+
+        .wrapper {
+            width: 100%; max-width: 950px; 
+            display: flex; flex-direction: column; gap: 10px;
+            height: auto; 
+        }
+
+        /* --- [헤더 영역] --- */
+        .header-row { display: flex; justify-content: space-between; align-items: flex-end; padding: 0 5px; flex-wrap: wrap; gap: 10px; }
+        .title-group { display: flex; flex-direction: column; }
+        .app-title { font-size: 24px; font-weight: 800; color: var(--text-main); margin: 0; line-height: 1.2;}
+        .designer-sign { font-size: 13px; color: var(--text-sub); font-style: italic; opacity: 0.7; margin-top: 4px;}
+
+        /* 상단 버튼 그룹 */
+        .header-btn-group { display: flex; gap: 8px; flex-wrap: wrap;}
+        
+        .header-btn {
+            background-color: var(--btn-theme-bg); color: var(--btn-theme-text);
+            border: 1px solid var(--btn-theme-border); padding: 8px 12px;
+            border-radius: 20px; cursor: pointer; font-weight: 600; font-size: 13px;
+            display: flex; align-items: center; gap: 6px; transition: 0.2s;
+            white-space: nowrap; 
+        }
+        .header-btn:hover { filter: brightness(95%); }
+        .header-btn.active { background-color: var(--accent-color); color: white; border-color: var(--accent-color); }
+        .mode-btn { background-color: var(--bg-body); color: var(--text-main); border: 2px solid var(--border-color); }
+        .mode-btn.active { background-color: var(--primary-color); color: white; border-color: var(--primary-color); }
+
+        /* --- [메인 컨테이너] --- */
+        .container { 
+            display: flex; gap: 15px; 
+            flex-wrap: wrap; 
+            height: auto; width: 100%; 
+        }
+
+        .box { 
+            background: var(--bg-box); padding: 20px; border-radius: 16px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08); border: 1px solid var(--border-color); 
+            display: flex; flex-direction: column; overflow: visible; 
+        }
+
+        .input-box { flex: 1 1 360px; max-width: 100%; }
+        .list-box { flex: 1.2 1 420px; max-width: 100%; } 
+
+        h2 { margin: 0 0 15px 0; font-size: 18px; color: var(--text-main); border-bottom: 2px solid var(--primary-color); padding-bottom: 8px; display: flex; justify-content: space-between; align-items: center;}
+        .section-title { font-size: 14px; color: var(--primary-color); font-weight: 700; margin: 0 0 8px 0; display: flex; align-items: center; gap: 5px;}
+        
+        .radio-group { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 5px;}
+        .radio-label {
+            flex: 1; min-width: 70px; cursor: pointer; font-size: 13px; padding: 10px 5px; 
+            border-radius: 8px; background: var(--radio-item-bg); border: 1px solid var(--border-color); 
+            color: var(--text-sub); text-align: center; font-weight: 500; transition: 0.2s; position: relative;
+        }
+        .radio-label:has(input:checked) { background-color: var(--radio-checked-bg); border-color: var(--primary-color); color: var(--radio-checked-text); font-weight: 700; }
+        
+        /* 고시인성 포커스 */
+        .radio-label:has(input:focus), input:focus, button:focus, .dash-card:focus {
+            outline: none !important; border-color: var(--focus-ring) !important; border-width: 2px !important;
+            box-shadow: 0 0 0 4px rgba(38, 132, 255, 0.3) !important; transform: translateY(-1px); z-index: 100;
+        }
+        [data-theme="dark"] .radio-label:has(input:focus), [data-theme="dark"] input:focus, [data-theme="dark"] button:focus, [data-theme="dark"] .dash-card:focus {
+             box-shadow: 0 0 0 4px rgba(100, 181, 246, 0.3) !important;
+        }
+
+        .radio-label input { position: absolute; opacity: 0; width: 0; height: 0; }
+        
+        label { display: block; margin-top: 5px; margin-bottom: 5px; font-weight: 600; font-size: 13px; color: var(--text-sub); }
+        input[type="text"], input[type="number"] { 
+            width: 100%; padding: 12px; border: 1px solid var(--border-color); 
+            background-color: var(--input-bg); color: var(--input-text);
+            border-radius: 8px; box-sizing: border-box; font-size: 16px;
+        }
+
+        .result-area { margin-top: 10px; padding: 15px; background: var(--result-bg); border-radius: 12px; text-align: center; border: 1px solid var(--result-border); }
+        .result-val { font-size: 26px; font-weight: 800; color: var(--result-text); margin-bottom: 5px;}
+        
+        .btn-base { width: 100%; padding: 14px; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 10px; }
+        .btn-add { background: var(--primary-color); color: white; }
+        .btn-add:hover { filter: brightness(90%); }
+        .btn-copy { background: #6c757d; color: white; font-size: 13px; padding: 6px 12px; border-radius: 6px; border:none; cursor: pointer; transition: 0.2s;}
+        
+        /* 테이블 */
+        .list-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 5px; }
+        .list-table th { background: var(--bg-body); color: var(--text-sub); padding: 8px; border-bottom: 2px solid var(--border-color); }
+        .list-table td { padding: 10px 5px; border-bottom: 1px solid var(--border-color); color: var(--text-main); vertical-align: middle; }
+        .amount { text-align: right; font-weight: bold; }
+        .btn-del { color: #ff5252; background: none; border: none; font-size: 16px; padding: 5px; cursor: pointer; }
+        
+        /* 다크모드 시 그룹헤더 글씨색 보정 */
+        .group-header { 
+            background: var(--radio-checked-bg); 
+            color: var(--radio-checked-text); 
+            font-weight: 700; padding: 8px; margin-top: 15px; 
+            border-left: 5px solid var(--primary-color); font-size: 14px; 
+        }
+        .total-row { margin-top: auto; padding-top: 20px; border-top: 2px solid var(--text-main); text-align: right; font-size: 20px; font-weight: 800; color: #d9534f; }
+
+        /* --- [모드 B 대시보드 스타일] --- */
+        .dash-grid { display: flex; flex-direction: column; gap: 12px; margin-top: 15px; } 
+        .dash-card {
+            display: flex; justify-content: space-between; align-items: center;
+            background: var(--bg-body); padding: 16px 20px; border-radius: 12px; 
+            border: 1px solid var(--border-color); cursor: pointer; transition: all 0.2s;
+        }
+        .dash-card:hover { background: var(--radio-checked-bg); border-color: var(--primary-color); }
+        .dash-card .title { font-weight: 800; font-size: 16px; color: var(--text-main); display:flex; align-items:center; gap:10px;} 
+        .dash-card .val { font-weight: 800; font-size: 20px; color: var(--primary-color); } 
+        .dash-card .shortcut { background: var(--text-sub); color: white; padding: 3px 8px; border-radius: 6px; font-size: 12px; font-weight: bold; }
+        
+        /* 부담부증여 모드(활성화) 전환 시 분홍색 테마 */
+        .dash-card.active-burden {
+            border-color: #e91e8c;
+            background: #fff0f8;
+            box-shadow: 0 2px 12px rgba(233, 30, 140, 0.2);
+        }
+        [data-theme="dark"] .dash-card.active-burden {
+            background: #4a1a35;
+            border-color: #f48fb1;
+            box-shadow: 0 2px 12px rgba(244, 143, 177, 0.25);
+        }
+        .dash-card.active-burden .title { color: #c2185b; }
+        .dash-card.active-burden .val { color: #c2185b; font-size: 22px; }
+        .dash-card.active-burden .shortcut { 
+            background: #e91e8c; 
+            color: white; 
+        }
+        [data-theme="dark"] .dash-card.active-burden .title { color: #f48fb1; }
+        [data-theme="dark"] .dash-card.active-burden .val { color: #f48fb1; }
+        /* 부담부증여 라디오 버튼 분홍 테마 */
+        .burden-radio-group .radio-label:has(input:checked) {
+            background-color: #ffe4f0;
+            border-color: #e91e8c;
+            color: #c2185b;
+        }
+        [data-theme="dark"] .burden-radio-group .radio-label:has(input:checked) {
+            background-color: #6b2040;
+            border-color: #f48fb1;
+            color: #f8bbd0;
+        }
+
+        .input-grid { display: flex; flex-wrap: wrap; gap: 15px; }
+        .input-section { flex: 1 1 100%; }
+        
+        /* 인쇄 모드 */
+        @media print {
+            body { background: white; height: auto; overflow: visible; display: block; }
+            .wrapper { width: 100%; max-width: none; min-width: 0 !important; }
+            .container { display: block; width: 100%; }
+            .header-row, .input-box, button, .header-btn-group { display: none !important; }
+            .box { box-shadow: none; border: none; padding: 0; overflow: visible; }
+            .list-box { flex: none; width: 100%; }
+            .print-header { display: block !important; text-align: center; border-bottom: 2px solid #000; margin-bottom: 20px; }
+            .print-title { font-size: 22pt; font-weight: bold; }
+            .print-footer { display: block !important; margin-top: 30px; text-align: right; font-style: italic; }
+            .list-table { border: 1px solid #000; }
+            .list-table th, .list-table td { border: 1px solid #000; padding: 5px; color: black; }
+        }
+        /* --- [유틸리티 클래스] --- */
+        .hidden { display: none !important; }
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .w-60 { width: 60px; }
+        .w-100 { width: 100%; }
+        .w-220 { width: 220px; }
+        .flex-center { display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .m-0 { margin: 0; }
+        .mt-2 { margin-top: 2px; }
+        .mt-4 { margin-top: 4px; }
+        .mt-5 { margin-top: 5px; }
+        .mt-10 { margin-top: 10px; }
+        .mt-15 { margin-top: 15px; }
+        .p-0 { padding: 0; }
+        .no-box-shadow { box-shadow: none; border: none; overflow: visible; }
+        .print-header, .print-footer { display: none; }
+        .btn-reset { background: none; border: 1px solid var(--border-color); padding: 4px 8px; border-radius: 4px; cursor: pointer; color: var(--text-main); }
+        .share-manual-area { margin-top: 5px; padding: 8px; background: var(--bg-body); border-radius: 8px; }
+        .debt-label { color: var(--debt-text); margin-top: 10px; }
+        .res-desc { font-size: 13px; color: var(--text-sub); margin-bottom: 5px; }
+        .res-rate { font-size: 12px; color: var(--text-sub); white-space: pre-line; }
+        .dash-burden-input-row { display: flex; justify-content: space-between; align-items: center; padding-left: 15px; padding-right: 5px; }
+        .dash-burden-label { color: var(--primary-color); font-size: 14px; font-weight: 800; }
+        .dash-burden-prop-area { padding-left: 15px; padding-right: 5px; }
+        .list-header-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 10px; }
+        .list-empty-msg { text-align: center; color: var(--text-sub); margin-top: 100px; opacity: 0.6; }
+        .list-empty-icon { font-size: 40px; margin-bottom: 10px; }
+        .flex-col-gap8 { display: flex; flex-direction: column; gap: 8px; }
+        .b-footer-info { font-size: 12px; color: var(--text-sub); text-align: center; margin-top: 15px; }
+        .flex-gap5 { display: flex; gap: 5px; }
+        .flex-gap10 { display: flex; gap: 10px; }
+        .flex-2 { flex: 2; }
+        .flex-1 { flex: 1; }
+        .print-date-style { font-size: 12px; text-align: right; }
+        .color-main { color: var(--text-main); }
+        .btn-print { background: var(--accent-color); color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; }
+        .fraction-span { font-size: 13px; font-weight: bold; color: var(--text-sub); white-space: nowrap; }
+        .input-fraction { text-align: center; width: 100%; padding: 12px 5px; }
+        .btn-all-add { background: var(--accent-color); color: white; margin-top: 6px; }
+    </style>
+</head>
+<body>
+
+<div class="wrapper">
+    <div class="header-row">
+        <div class="title-group">
+            <h1 class="app-title">국민주택채권 계산기 v1.6.2</h1>
+            <div class="designer-sign">Designed by J.H. Lee</div>
+        </div>
+        
+        <div class="header-btn-group">
+            <button class="header-btn mode-btn" id="btnModeA" onclick="switchMode('A')">📝 맞춤형 상세 계산 (A)</button>
+            <button class="header-btn mode-btn active" id="btnModeB" onclick="switchMode('B')">⚡ 빠른 대시보드 (B)</button>
+            <button class="header-btn" onclick="toggleTheme()" id="themeBtn">🌙 눈 보호</button>
+            <button class="header-btn" onclick="toggleAlwaysOnTop()" id="pinBtn" title="윈도우 창을 항상 위에 고정">📌 상단 고정</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="box input-box">
+            <h2>
+                <span id="modeTitle">빠른 대시보드 입력</span> 
+                <button onclick="resetAll()" class="btn-reset">🔄 초기화(Esc)</button>
+            </h2>
+            
+            <!-- ================= [ 모드 A : 맞춤형 상세 계산 ] ================= -->
+            <div id="modeA_container" class="hidden">
+                <div class="input-grid">
+                    <div class="input-section">
+                        <div class="section-title">1. 부동산 소재지</div>
+                        <div class="radio-group">
+                            <label class="radio-label"><input type="radio" name="A_region" value="special" onchange="saveRegion(this.value); calcModeA()">특별시/광역시</label>
+                            <label class="radio-label"><input type="radio" name="A_region" value="other" checked onchange="saveRegion(this.value); calcModeA()">그 외 지역</label>
+                        </div>
+                    </div>
+
+                    <div class="input-section">
+                        <div class="section-title">2. 부동산 종류</div>
+                        <div class="radio-group">
+                            <label class="radio-label"><input type="radio" name="A_propType" value="house" checked onchange="calcModeA()">🏠 주택</label>
+                            <label class="radio-label"><input type="radio" name="A_propType" value="land" onchange="calcModeA()">🌳 토지</label>
+                            <label class="radio-label"><input type="radio" name="A_propType" value="building" onchange="calcModeA()">🏢 건물</label>
+                        </div>
+                    </div>
+
+                    <div class="input-section">
+                        <div class="section-title">3. 등기 원인</div>
+                        <div class="radio-group">
+                            <label class="radio-label"><input type="radio" name="A_cause" value="paid" checked onchange="toggleInputsA(); calcModeA();">매매(유상)</label>
+                            <label class="radio-label"><input type="radio" name="A_cause" value="free" onchange="toggleInputsA(); calcModeA();">증여(무상)</label>
+                            <label class="radio-label"><input type="radio" name="A_cause" value="burden" onchange="toggleInputsA(); calcModeA();">부담부증여</label>
+                        </div>
+                    </div>
+
+                    <div class="input-section">
+                        <div class="section-title">4. 소유 형태</div>
+                        <div class="radio-group">
+                            <label class="radio-label"><input type="radio" name="A_ownership" value="sole" checked onchange="toggleShareA(); calcModeA();">단독 소유</label>
+                            <label class="radio-label"><input type="radio" name="A_ownership" value="shared" onchange="toggleShareA(); calcModeA();">공유 (지분)</label>
+                        </div>
+                        <div id="A_shareArea" class="hidden share-manual-area">
+                            <div class="radio-group">
+                                <label class="radio-label"><input type="radio" name="A_shareType" value="2" checked onchange="toggleManualA(); calcModeA();">2인(2분의 1)</label>
+                                <label class="radio-label"><input type="radio" name="A_shareType" value="3" onchange="toggleManualA(); calcModeA();">3인(3분의 1)</label>
+                                <label class="radio-label"><input type="radio" name="A_shareType" value="manual" onchange="toggleManualA(); calcModeA();">직접입력</label>
+                            </div>
+                            <div id="A_manualInput" class="hidden flex-center mt-5">
+                                <input type="text" inputmode="numeric" id="A_den" placeholder="2" class="text-center w-60" aria-label="지분 분모" onfocus="this.select()" oninput="cleanFraction(this); calcModeA();" onblur="blurFraction(this); calcModeA();">
+                                <span class="fraction-span">분의</span>
+                                <input type="text" inputmode="numeric" id="A_num" placeholder="1" class="text-center w-60" aria-label="지분 분자" onfocus="this.select()" oninput="cleanFraction(this); calcModeA();" onblur="blurFraction(this); calcModeA();">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="input-section">
+                        <label>시가표준액 (전체)</label>
+                        <input type="text" id="A_totalAmount" placeholder="금액 입력" inputmode="numeric" onfocus="this.select()" oninput="formatNum(this); calcModeA();">
+
+                        <div id="A_debtArea" class="hidden">
+                            <label class="debt-label">└ 채무인수액 (전체)</label>
+                            <input type="text" id="A_debtAmount" placeholder="보증금/대출금" inputmode="numeric" onfocus="this.select()" oninput="formatNum(this); calcModeA();">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="result-area">
+                    <div class="res-desc">채권 매입액 (1인 기준)</div>
+                    <div class="result-val" id="A_curResult">0 원</div>
+                    <div id="A_rateDesc" class="res-rate">-</div>
+                </div>
+
+                <button class="btn-base btn-add" id="btnModeAAdd" onclick="addListFromModeA(false)">⬇ 목록에 1명 추가 (Space)</button>
+                <button class="btn-base btn-all-add hidden" id="btnModeAAddAll" onclick="addListFromModeA(true)">🔒 공유자 전원(2명) 일괄 추가</button>
+            </div>
+
+            <!-- ================= [ 모드 B : 빠른 대시보드 모드 ] ================= -->
+            <div id="modeB_container">
+                <div class="input-grid">
+                    <div class="input-section">
+                        <div class="section-title">1. 부동산 소재지</div>
+                        <div class="radio-group">
+                            <label class="radio-label"><input type="radio" name="B_region" value="special" onchange="saveRegion(this.value); calcModeB()">특별시/광역시</label>
+                            <label class="radio-label"><input type="radio" name="B_region" value="other" checked onchange="saveRegion(this.value); calcModeB()">그 외 지역</label>
+                        </div>
+                    </div>
+
+                    <div class="input-section flex-gap10">
+                        <div class="flex-2">
+                            <label>2. 시가표준액 (전체)</label>
+                            <input type="text" id="B_totalAmount" placeholder="금액 입력" inputmode="numeric" onfocus="this.select()" oninput="formatNum(this); calcModeB();">
+                        </div>
+                        <div class="flex-1">
+                            <label>지분 (단독=1분의 1)</label>
+                            <div class="flex-center">
+                                <input type="text" inputmode="numeric" id="B_den" aria-label="지분 분모" value="1" class="input-fraction" onfocus="this.select()" oninput="cleanFraction(this); calcModeB();" onblur="blurFraction(this); calcModeB();">
+                                <span class="fraction-span">분의</span>
+                                <input type="text" inputmode="numeric" id="B_num" aria-label="지분 분자" value="1" class="input-fraction" onfocus="this.select()" oninput="cleanFraction(this); calcModeB();" onblur="blurFraction(this); calcModeB();">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4개 결과 동시 송출 대시보드 -->
+                <div class="dash-grid" id="B_dashboard">
+                    <div class="dash-card" tabindex="0" data-id="1" onclick="addListFromModeB(1, event.shiftKey)">
+                        <div class="title">🏠 주택 <span class="shortcut">1</span></div>
+                        <div class="val" id="B_res1">0 원</div>
+                    </div>
+                    <div class="dash-card" tabindex="0" data-id="2" onclick="addListFromModeB(2, event.shiftKey)">
+                        <div class="title">🌳 토지 <span class="shortcut">2</span></div>
+                        <div class="val" id="B_res2">0 원</div>
+                    </div>
+                    <div class="dash-card" tabindex="0" data-id="3" onclick="addListFromModeB(3, event.shiftKey)">
+                        <div class="title">🏢 건물 <span class="shortcut">3</span></div>
+                        <div class="val" id="B_res3">0 원</div>
+                    </div>
+                    
+                    <!-- 점진적 전환 UI: 증여/부담부증여 카드 묶음 -->
+                    <div class="flex-col-gap8">
+                        <div class="dash-card" tabindex="0" data-id="4" onclick="addListFromModeB(4, event.shiftKey)" id="B_card4">
+                            <div class="title" id="B_title4">🎁 증여(무상) <span class="shortcut">4</span></div>
+                            <div class="val" id="B_res4">0 원</div>
+                        </div>
+                        
+                        <!-- 채무인수액 입력 시 위 카드가 자동으로 변신함 -->
+                        <div class="dash-burden-input-row mt-2">
+                            <label class="dash-burden-label m-0">↳ 채무액 (입력 시 부담부증여로 전환)</label>
+                            <input type="text" id="B_debtAmount" placeholder="금액 입력" inputmode="numeric" class="text-right w-220" onfocus="this.select()" oninput="formatNum(this); calcModeB();">
+                        </div>
+                        
+                        <!-- [v1.6.2 최종 추가] 부담부증여 시 부동산 종류 선택 라디오 (채무액 있을 때만 나타남) -->
+                        <div id="B_burdenPropTypeArea" class="hidden dash-burden-prop-area mt-4">
+                            <div class="radio-group m-0 burden-radio-group">
+                                <label class="radio-label"><input type="radio" name="B_burdenPropType" value="house" onchange="calcModeB()">🏠 주택</label>
+                                <label class="radio-label"><input type="radio" name="B_burdenPropType" value="land" onchange="calcModeB()">🌳 토지</label>
+                                <label class="radio-label"><input type="radio" name="B_burdenPropType" value="building" checked onchange="calcModeB()">🏢 건물</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="b-footer-info">
+                    ※ <kbd>Enter</kbd>로 항목 이동, <kbd>Alt</kbd>+<kbd>숫자</kbd>로 즉시 추가 (<kbd>Shift</kbd> 누르고 추가 시 전원 일괄 반영)
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= [ 공통 목록 영역 ] ================= -->
+        <div class="box list-box">
+            <div class="print-header">
+                <div class="print-title">국민주택채권 매입 산출내역서</div>
+                <div id="printDate" class="print-date-style"></div>
+            </div>
+
+            <div class="list-header-row">
+                <h3 class="m-0 color-main">산출 목록</h3>
+                <div class="flex-gap5">
+                    <button class="btn-copy" id="copyBtn" onclick="copyForCorrection()">📋 결과 복사(Ctrl+C)</button>
+                    <button onclick="window.print()" class="btn-print">🖨️ 인쇄</button>
+                </div>
+            </div>
+
+            <div id="listContainer" class="flex-1">
+                <div class="list-empty-msg">
+                    <div class="list-empty-icon">📝</div>
+                    계산 결과를 목록에 추가해 주세요.
+                </div>
+            </div>
+
+            <div class="total-row">
+                총 합계: <span id="grandTotal">0 원</span>
+            </div>
+            
+            <div class="print-footer">Designed by J.H. Lee</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- [전역 상태 및 초기화] ---
+    let currentMode = 'B'; 
+    let list = [];
+
+    window.onload = function() {
+        const savedRegion = localStorage.getItem('defaultRegion');
+        if(savedRegion) {
+            document.querySelector(`input[name="A_region"][value="${savedRegion}"]`).checked = true;
+            document.querySelector(`input[name="B_region"][value="${savedRegion}"]`).checked = true;
+        }
+        
+        const savedTheme = localStorage.getItem('theme');
+        if(savedTheme === 'dark') {
+            document.body.setAttribute('data-theme', 'dark');
+            document.getElementById('themeBtn').innerText = '☀️ 라이트 모드';
+        }
+        
+        switchMode('B'); 
+    }
+
+    // --- [모드 전환 로직] ---
+    function switchMode(mode) {
+        currentMode = mode;
+        const btnA = document.getElementById('btnModeA');
+        const btnB = document.getElementById('btnModeB');
+        const conA = document.getElementById('modeA_container');
+        const conB = document.getElementById('modeB_container');
+        const title = document.getElementById('modeTitle');
+
+        if(mode === 'A') {
+            conA.classList.remove('hidden'); conB.classList.add('hidden');
+            btnA.classList.add('active'); btnB.classList.remove('active');
+            title.innerText = "맞춤형 상세 계산";
+            document.getElementById('A_totalAmount').focus();
+        } else {
+            conA.classList.add('hidden'); conB.classList.remove('hidden');
+            btnA.classList.remove('active'); btnB.classList.add('active');
+            title.innerText = "빠른 대시보드 입력";
+            document.getElementById('B_totalAmount').focus();
+            calcModeB(); 
+        }
+    }
+
+    // --- [기능 제어] ---
+    let isAlwaysOnTop = false;
+    async function toggleAlwaysOnTop() {
+        if (window.__TAURI__) {
+            try {
+                const { getCurrentWindow } = window.__TAURI__.window;
+                const appWindow = getCurrentWindow();
+                isAlwaysOnTop = !isAlwaysOnTop;
+                await appWindow.setAlwaysOnTop(isAlwaysOnTop);
+                document.getElementById('pinBtn').classList.toggle('active', isAlwaysOnTop);
+            } catch (e) {}
+        } else {
+            isAlwaysOnTop = !isAlwaysOnTop;
+            document.getElementById('pinBtn').classList.toggle('active', isAlwaysOnTop);
+        }
+    }
+
+    function toggleTheme() {
+        const body = document.body;
+        if (body.getAttribute('data-theme') === 'dark') {
+            body.removeAttribute('data-theme'); localStorage.setItem('theme', 'light');
+            document.getElementById('themeBtn').innerText = '🌙 눈 보호';
+        } else {
+            body.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark');
+            document.getElementById('themeBtn').innerText = '☀️ 라이트 모드';
+        }
+    }
+
+    function resetAll() { if(confirm('모든 내용을 초기화하시겠습니까?')) location.reload(); }
+    function saveRegion(val) { localStorage.setItem('defaultRegion', val); }
+
+    // --- [입력 유효성 검사 (음수/0 차단)] ---
+    function cleanFraction(el) { el.value = el.value.replace(/[^0-9]/g, ''); }
+    function blurFraction(el) { let v = parseInt(el.value); if (isNaN(v) || v <= 0) el.value = '1'; }
+    function sanitizeFraction(valStr) { let v = parseFloat(valStr); if (isNaN(v) || v <= 0) return 1; return v; }
+
+    // --- [공통 계산 유틸리티] ---
+    function formatNum(el) {
+        let v = el.value.replace(/[^0-9]/g, '');
+        el.value = v ? parseInt(v, 10).toLocaleString() : '';
+    }
+    function getVal(id) {
+        const el = document.getElementById(id);
+        if (!el) return 0;
+        let v = el.value.replace(/,/g, '');
+        return v ? parseInt(v, 10) : 0;
+    }
+    function getRadio(name) {
+        let el = document.querySelector(`input[name="${name}"]:checked`);
+        return el ? el.value : "";
+    }
+    
+    function getRate(base, region, prop, type) {
+        let isSpecial = (region === 'special');
+        let r = 0;
+        if (type === 'free') {
+             if(isSpecial) { 
+                if(base >= 150000000) r=0.042; else if(base >= 50000000) r=0.028; else if(base >= 10000000) r=0.018;
+            } else { 
+                if(base >= 150000000) r=0.039; else if(base >= 50000000) r=0.025; else if(base >= 10000000) r=0.014;
+            }
+            return r;
+        } 
+        if (prop === 'house') { 
+            if(isSpecial) { 
+                if(base >= 600000000) r=0.031; else if(base >= 260000000) r=0.026; else if(base >= 160000000) r=0.023;
+                else if(base >= 100000000) r=0.021; else if(base >= 50000000) r=0.019; else if(base >= 20000000) r=0.013;
+            } else { 
+                if(base >= 600000000) r=0.026; else if(base >= 260000000) r=0.021; else if(base >= 160000000) r=0.018;
+                else if(base >= 100000000) r=0.016; else if(base >= 50000000) r=0.014; else if(base >= 20000000) r=0.013;
+            }
+        } else if (prop === 'land') { 
+            if(isSpecial) { 
+                if(base >= 100000000) r=0.05; else if(base >= 50000000) r=0.04; else if(base >= 5000000) r=0.025;
+            } else {
+                if(base >= 100000000) r=0.045; else if(base >= 50000000) r=0.035; else if(base >= 5000000) r=0.02;
+            }
+        } else if (prop === 'building') { 
+             if(isSpecial) { 
+                if(base >= 250000000) r=0.02; else if(base >= 130000000) r=0.016; else if(base >= 10000000) r=0.01;
+            } else {
+                if(base >= 250000000) r=0.018; else if(base >= 130000000) r=0.014; else if(base >= 10000000) r=0.008;
+            }
+        }
+        return r;
+    }
+
+    function computeSingleBond(total, debt, share, region, prop, cause) {
+        let myTotal = total * share; 
+        let myDebt = debt * share;   
+        let finalBond = 0, desc = "", detail = "", plainDetail = "";
+
+        if(cause === 'burden') {
+            if(myDebt >= myTotal) {
+                let r = getRate(myTotal, region, prop, 'paid'); 
+                finalBond = Math.round((myTotal * r)/10000)*10000;
+                detail = `[전체유상간주] ${parseInt(myTotal).toLocaleString()} × ${(r*100).toFixed(1)}%`;
+            } else {
+                let rPaid = getRate(myTotal, region, prop, 'paid'); 
+                let rFree = getRate(myTotal, region, prop, 'free');
+                let bPaid = Math.round((myDebt * rPaid)/10000)*10000;
+                let bFree = Math.round(((myTotal-myDebt) * rFree)/10000)*10000;
+                finalBond = bPaid + bFree;
+                detail = `[유상] ${parseInt(myDebt).toLocaleString()} × ${(rPaid*100).toFixed(1)}% = ${bPaid.toLocaleString()}<br>[무상] ${parseInt(myTotal-myDebt).toLocaleString()} × ${(rFree*100).toFixed(1)}% = ${bFree.toLocaleString()}`;
+            }
+        } else if (cause === 'free') {
+            let r = getRate(myTotal, region, prop, 'free');
+            finalBond = Math.round((myTotal * r)/10000)*10000;
+            detail = `[무상] ${parseInt(myTotal).toLocaleString()} × ${(r*100).toFixed(1)}%`;
+        } else {
+            let r = getRate(myTotal, region, prop, 'paid');
+            finalBond = Math.round((myTotal * r)/10000)*10000;
+            detail = `[유상] ${parseInt(myTotal).toLocaleString()} × ${(r*100).toFixed(1)}%`;
+        }
+        return { bond: finalBond, detail: detail };
+    }
+
+    // --- [모드 A 스크립트] ---
+    function toggleInputsA() {
+        const el = document.getElementById('A_debtArea');
+        if (getRadio('A_cause') === 'burden') el.classList.remove('hidden');
+        else el.classList.add('hidden');
+    }
+    function toggleShareA() {
+        let isShared = (getRadio('A_ownership') === 'shared');
+        const el = document.getElementById('A_shareArea');
+        const addAllBtn = document.getElementById('btnModeAAddAll');
+        if (isShared) {
+            el.classList.remove('hidden');
+            addAllBtn.classList.remove('hidden');
+            // 인원수에 따라 버튼 텍스트 동적 업데이트
+            let sType = getRadio('A_shareType');
+            let count = sType === '2' ? 2 : sType === '3' ? 3 : (parseInt(document.getElementById('A_den')?.value) || 2);
+            addAllBtn.innerText = `🔒 공유자 전원(${count}명) 일괄 추가`;
+        } else {
+            el.classList.add('hidden');
+            addAllBtn.classList.add('hidden');
+        }
+        toggleManualA();
+    }
+    function toggleManualA() {
+        const el = document.getElementById('A_manualInput');
+        if (getRadio('A_shareType') === 'manual') el.classList.remove('hidden'); else el.classList.add('hidden');
+    }
+    
+    function calcModeA() {
+        let total = getVal('A_totalAmount'), debt = getVal('A_debtAmount');
+        let region = getRadio('A_region'), cause = getRadio('A_cause'), prop = getRadio('A_propType');
+        let share = 1; let shareText = "단독"; let personCount = 1;
+
+        if (getRadio('A_ownership') === 'shared') {
+            let sType = getRadio('A_shareType');
+            if (sType === '2') { share = 0.5; shareText = "지분(2분의 1)"; personCount = 2; }
+            else if (sType === '3') { share = 1/3; shareText = "지분(3분의 1)"; personCount = 3; }
+            else {
+                let n = sanitizeFraction(document.getElementById('A_num').value);
+                let d = sanitizeFraction(document.getElementById('A_den').value);
+                share = n/d; shareText = `지분(${d}분의 ${n})`; personCount = d;
+            }
+        }
+        let res = computeSingleBond(total, debt, share, region, prop, cause);
+        document.getElementById('A_curResult').innerText = res.bond.toLocaleString() + " 원";
+        
+        // 전원추가 버튼 텍스트 자동 업데이트
+        const addAllBtn = document.getElementById('btnModeAAddAll');
+        if (personCount > 1) addAllBtn.innerText = `🔒 공유자 전원(${personCount}명) 일괄 추가`;
+
+        return {
+            regionCode: region, desc: `${cause==='burden'?'부담부증여':(cause==='free'?'증여':'매매')}(${prop==='house'?'주택':(prop==='land'?'토지':'건물')})`,
+            detail: res.detail, plainDetail: res.detail.replace(/<br>/g, " / "), bond: res.bond, shareText: shareText, personCount: personCount
+        };
+    }
+    function addListFromModeA(isBatch = false) {
+        let d = calcModeA();
+        if(d.bond === 0 && getVal('A_totalAmount')===0) return;
+        let count = (isBatch && d.personCount > 1) ? d.personCount : 1;
+        for(let i = 0; i < count; i++) list.push({...d});
+        render(); scrollToBottom();
+    }
+
+    // --- [모드 B 스크립트 (Morphing 로직 적용)] ---
+    let modeB_cache = {}; 
+
+    function calcModeB() {
+        let total = getVal('B_totalAmount');
+        let debt = getVal('B_debtAmount'); 
+        let region = getRadio('B_region');
+        
+        let n = sanitizeFraction(document.getElementById('B_num').value);
+        let d = sanitizeFraction(document.getElementById('B_den').value);
+        let share = n/d;
+        let shareText = (n===1 && d===1) ? "단독" : `지분(${d}분의 ${n})`;
+
+        let r1 = computeSingleBond(total, debt, share, region, 'house', 'paid');
+        let r2 = computeSingleBond(total, debt, share, region, 'land', 'paid');
+        let r3 = computeSingleBond(total, debt, share, region, 'building', 'paid');
+        
+        let r4;
+        let titleHtml = "";
+        let descText = "";
+        let card4 = document.getElementById('B_card4');
+        let burdenPropArea = document.getElementById('B_burdenPropTypeArea');
+
+        // [v1.6.2 최종 업데이트] 채무액 존재 여부에 따라 라디오 표시 및 요율 선택 적용
+        if (debt > 0) {
+            burdenPropArea.classList.remove('hidden');
+            let bProp = getRadio('B_burdenPropType');
+            let bPropName = (bProp === 'house') ? '주택' : (bProp === 'land' ? '토지' : '건물');
+            
+            r4 = computeSingleBond(total, debt, share, region, bProp, 'burden');
+            titleHtml = `🤝 부담부증여(${bPropName}) <span class="shortcut">4</span>`;
+            descText = `부담부증여(${bPropName})`;
+            card4.classList.add('active-burden');
+        } else {
+            burdenPropArea.classList.add('hidden');
+            r4 = computeSingleBond(total, debt, share, region, 'building', 'free');
+            titleHtml = `🎁 증여(무상) <span class="shortcut">4</span>`;
+            descText = "증여";
+            card4.classList.remove('active-burden');
+        }
+
+        document.getElementById('B_res1').innerText = r1.bond.toLocaleString() + " 원";
+        document.getElementById('B_res2').innerText = r2.bond.toLocaleString() + " 원";
+        document.getElementById('B_res3').innerText = r3.bond.toLocaleString() + " 원";
+        document.getElementById('B_title4').innerHTML = titleHtml;
+        document.getElementById('B_res4').innerText = r4.bond.toLocaleString() + " 원";
+
+        modeB_cache = {
+            1: { regionCode: region, desc: "매매(주택)", detail: r1.detail, plainDetail: r1.detail.replace(/<br>/g, " / "), bond: r1.bond, shareText: shareText },
+            2: { regionCode: region, desc: "매매(토지)", detail: r2.detail, plainDetail: r2.detail.replace(/<br>/g, " / "), bond: r2.bond, shareText: shareText },
+            3: { regionCode: region, desc: "매매(건물)", detail: r3.detail, plainDetail: r3.detail.replace(/<br>/g, " / "), bond: r3.bond, shareText: shareText },
+            4: { regionCode: region, desc: descText, detail: r4.detail, plainDetail: r4.detail.replace(/<br>/g, " / "), bond: r4.bond, shareText: shareText }
+        };
+    }
+
+    // 일괄 추가 지원 
+    function addListFromModeB(idx, isBatch = false) {
+        if(getVal('B_totalAmount')===0) return;
+        calcModeB(); 
+        
+        let count = 1;
+        if (isBatch) {
+            let den = parseInt(document.getElementById('B_den').value) || 1;
+            if (den > 1) {
+                count = den; 
+            }
+        }
+        
+        for(let i=0; i<count; i++) {
+            list.push(JSON.parse(JSON.stringify(modeB_cache[idx])));
+        }
+        render(); scrollToBottom();
+    }
+
+    // --- [공통 출력 로직] ---
+    function render() {
+        let con = document.getElementById('listContainer'); con.innerHTML = ""; let grand = 0;
+        if(list.length === 0) {
+            con.innerHTML = '<div style="text-align:center; color:var(--text-sub); margin-top:100px; opacity:0.6;"><div style="font-size:40px; margin-bottom:10px;">📝</div>계산 결과를 목록에 추가해 주세요.</div>';
+            document.getElementById('grandTotal').innerText = "0 원"; return;
+        }
+        let groups = { 'special': [], 'other': [] };
+        list.forEach((item, idx) => { item.idx = idx; if(item.regionCode === 'special') groups.special.push(item); else groups.other.push(item); });
+
+        function drawGroup(name, items) {
+            if(items.length === 0) return;
+            let html = `<div class="group-header">■ ${name}</div><table class="list-table"><thead><tr><th width="20%">구분</th><th width="50%">산출 내역</th><th width="25%">매입액</th><th width="5%"></th></tr></thead><tbody>`;
+            items.forEach(item => {
+                grand += item.bond;
+                html += `<tr><td>${item.desc}<br><span style="font-size:11px; opacity:0.8;">${item.shareText}</span></td>
+                <td style="text-align:left; padding-left:10px; white-space:pre-line; line-height:1.4;">${item.detail}</td>
+                <td class="amount">${item.bond.toLocaleString()}</td><td><button class="btn-del" onclick="remove(${item.idx})">×</button></td></tr>`;
+            });
+            html += `</tbody></table>`; con.innerHTML += html;
+        }
+
+        drawGroup("특별시 / 광역시 등", groups.special); drawGroup("기타 지역 (시/군)", groups.other);
+        document.getElementById('grandTotal').innerText = grand.toLocaleString() + " 원";
+        let now = new Date(); document.getElementById('printDate').innerText = `출력일시: ${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()} ${now.getHours()}:${now.getMinutes()}`;
+    }
+
+    function remove(i) { list.splice(i, 1); render(); }
+    function scrollToBottom() { setTimeout(() => { window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); }, 50); }
+
+    function copyForCorrection() {
+        if (list.length === 0) { alert("복사할 내역이 없습니다."); return; }
+        let text = "[국민주택채권 산출 근거]\n"; let grand = 0;
+        list.forEach((item, i) => { grand += item.bond; text += `${i+1}. ${item.desc} | ${item.plainDetail} | ${item.bond.toLocaleString()}원\n`; });
+        text += `\n총 합계: ${grand.toLocaleString()}원`;
+        navigator.clipboard.writeText(text).then(() => {
+            const btn = document.getElementById('copyBtn'); const origin = btn.innerText;
+            btn.innerText = "✅ 복사 완료!"; btn.style.backgroundColor = "var(--accent-color)";
+            setTimeout(() => { btn.innerText = origin; btn.style.backgroundColor = "#6c757d"; }, 1000);
+        });
+    }
+
+    // --- [강력해진 전역 키보드 제어] ---
+    document.addEventListener('keydown', function(event) {
+        
+        // 1. Alt + 숫자키 (1~4): 즉시 추가
+        if (event.altKey && event.code.startsWith('Digit')) {
+            const num = event.code.replace('Digit', '');
+            if (num >= '1' && num <= '4') {
+                event.preventDefault();
+                if(currentMode !== 'B') switchMode('B'); 
+                addListFromModeB(parseInt(num));
+                return;
+            }
+        }
+
+        // 2. Shift + 숫자키 (1~4): 전원 입력 (일괄 반영)
+        // 입력창 내부가 아닐 때만 작동
+        if (event.shiftKey && event.code.startsWith('Digit') && event.target.tagName !== 'INPUT') {
+            const num = event.code.replace('Digit', '');
+            if (num >= '1' && num <= '4') {
+                event.preventDefault(); 
+                if(currentMode !== 'B') switchMode('B');
+                addListFromModeB(parseInt(num), true);
+                return;
+            }
+        }
+
+        // 3. 카드 포커스 상태에서 숫자키만 누를 때 (Shift/Alt 없이)
+        if (!event.shiftKey && !event.altKey && !event.ctrlKey && currentMode === 'B' && document.activeElement.classList.contains('dash-card')) {
+            if (event.key >= '1' && event.key <= '4') {
+                event.preventDefault(); addListFromModeB(parseInt(event.key)); return;
+            }
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault(); let id = document.activeElement.getAttribute('data-id');
+                if(id) addListFromModeB(parseInt(id), event.shiftKey); return;
+            }
+        }
+
+        if (event.key === 'Tab') { event.preventDefault(); return; }
+
+        if (event.key === 'Enter' || event.key === 'ArrowDown') {
+            event.preventDefault(); moveFocus(1); return;
+        }
+        if (event.key === 'ArrowUp') {
+            event.preventDefault(); moveFocus(-1); return;
+        }
+
+        if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+            const current = document.activeElement;
+            if (current.tagName === 'INPUT' && current.type === 'text') {
+                if (event.key === 'ArrowRight' && current.selectionEnd === current.value.length) {
+                    if (current.id === 'B_totalAmount') { event.preventDefault(); document.getElementById('B_den').focus(); return; } 
+                    if (current.id.endsWith('_den')) { event.preventDefault(); document.getElementById(current.id.replace('_den', '_num')).focus(); return; } 
+                }
+                if (event.key === 'ArrowLeft' && current.selectionStart === 0) {
+                    if (current.id === 'B_den') { event.preventDefault(); document.getElementById('B_totalAmount').focus(); return; } 
+                    if (current.id.endsWith('_num')) { event.preventDefault(); document.getElementById(current.id.replace('_num', '_den')).focus(); return; } 
+                }
+            }
+            return;
+        }
+
+        if (event.key === ' ' && currentMode === 'A') {
+            if (event.target.tagName === 'INPUT') { event.preventDefault(); addListFromModeA(); }
+        }
+
+        if (event.key === 'Delete') {
+            let amtIds = ['A_totalAmount', 'B_totalAmount', 'B_debtAmount'];
+            let tgt = currentMode==='A' ? 'A_totalAmount' : 'B_totalAmount';
+            if(!amtIds.includes(document.activeElement.id)) {
+                 document.getElementById(tgt).value = ""; document.getElementById(tgt).focus();
+                 if(currentMode==='A') calcModeA(); else calcModeB();
+            }
+        }
+        if (event.ctrlKey && (event.key === 'c' || event.key === 'C')) {
+            if (window.getSelection().toString() === "") { event.preventDefault(); copyForCorrection(); }
+        }
+        if (event.key === 'Escape' || event.key === 'F12') { event.preventDefault(); resetAll(); }
+    }, {passive: false});
+
+    function moveFocus(direction) {
+        const seqA = [
+            document.querySelector('input[name="A_region"]:checked'), document.querySelector('input[name="A_propType"]:checked'),
+            document.querySelector('input[name="A_cause"]:checked'), document.querySelector('input[name="A_ownership"]:checked')
+        ];
+        if (!document.getElementById('A_shareArea').classList.contains('hidden')) {
+             seqA.push(document.querySelector('input[name="A_shareType"]:checked'));
+             if (!document.getElementById('A_manualInput').classList.contains('hidden')) { 
+                 seqA.push(document.getElementById('A_den'));
+                 seqA.push(document.getElementById('A_num'));
+             }
+        }
+        seqA.push(document.getElementById('A_totalAmount'));
+        if (!document.getElementById('A_debtArea').classList.contains('hidden')) seqA.push(document.getElementById('A_debtAmount'));
+        seqA.push(document.getElementById('btnModeAAdd'));
+
+        const seqB = [
+            document.querySelector('input[name="B_region"]:checked'),
+            document.getElementById('B_totalAmount'),
+            document.querySelector('.dash-card[data-id="1"]'),
+            document.querySelector('.dash-card[data-id="2"]'),
+            document.querySelector('.dash-card[data-id="3"]'),
+            document.querySelector('.dash-card[data-id="4"]'),
+            document.getElementById('B_debtAmount')
+        ];
+        
+        // [v1.6.2 최종 업데이트] 부담부증여 라디오 버튼이 보이면 포커스 이동 경로에 추가
+        if (!document.getElementById('B_burdenPropTypeArea').classList.contains('hidden')) {
+            seqB.push(document.querySelector('input[name="B_burdenPropType"]:checked'));
+        }
+
+        const sequence = currentMode === 'A' ? seqA : seqB;
+        const current = document.activeElement;
+        let currIdx = sequence.findIndex(el => el === current || (el && el.type === 'radio' && current.name === el.name));
+        
+        if(currIdx === -1 && currentMode === 'B' && (current.id === 'B_num' || current.id === 'B_den')) {
+            currIdx = 1;
+        }
+
+        let nextIdx = currIdx + direction;
+        if (nextIdx >= 0 && nextIdx < sequence.length) sequence[nextIdx].focus();
+        else if (nextIdx >= sequence.length) sequence[0].focus();
+        else if (nextIdx < 0) sequence[sequence.length - 1].focus();
+    }
+</script>
+</body>
+</html>

@@ -824,10 +824,13 @@
             }
         }
 
-        // 2. 카드 포커스 상태에서 숫자키 (1~4): 개별 1건 추가
-        if (!event.shiftKey && !event.altKey && !event.ctrlKey && currentMode === 'B' && document.activeElement.classList.contains('dash-card')) {
-            if (event.key >= '1' && event.key <= '4') {
-                event.preventDefault(); addListFromModeB(parseInt(event.key)); return;
+        // 2. 텍스트 입력창이 아닐 때 숫자키 (1~4): 개별 1건 추가 (라디오 버튼 등에서도 동작)
+        if (!event.shiftKey && !event.altKey && !event.ctrlKey && currentMode === 'B') {
+            const isTextInput = document.activeElement.tagName === 'INPUT' && (document.activeElement.type === 'text' || document.activeElement.type === 'number');
+            if (!isTextInput) {
+                if (event.key >= '1' && event.key <= '4') {
+                    event.preventDefault(); addListFromModeB(parseInt(event.key)); return;
+                }
             }
         }
 

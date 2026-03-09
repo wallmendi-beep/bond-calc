@@ -785,16 +785,19 @@
 
     // --- [강력해진 전역 키보드 제어] ---
     document.addEventListener('keydown', function(event) {
-        // 숫자키 코드 추출 헬퍼 (Digit1~4, Numpad1~4 모두 지원)
-        function getDigit(code) {
+        // 숫자키 코드 추출 헬퍼 (Digit, Numpad 모두 지원 + NumLock 상태 무관)
+        function getDigit(event) {
+            const code = event.code;
             if (code.startsWith('Digit')) return code.replace('Digit', '');
             if (code.startsWith('Numpad')) return code.replace('Numpad', '');
+            // NumLock ON + Shift 시 넘패드가 방향키로 변환된 경우 event.key로 직접 체크
+            if (event.key >= '1' && event.key <= '9') return event.key;
             return null;
         }
 
         // 1. Shift + 숫자키 (1~4): 전원 입력 (일괄 반영) — 최우선 처리
         if (event.shiftKey && !event.altKey && !event.ctrlKey) {
-            const num = getDigit(event.code);
+            const num = getDigit(event);
             if (num && num >= '1' && num <= '4') {
                 event.preventDefault();
                 event.stopImmediatePropagation();
@@ -806,7 +809,7 @@
 
         // 2. Alt + 숫자키 (1~4): 즉시 추가
         if (event.altKey) {
-            const num = getDigit(event.code);
+            const num = getDigit(event);
             if (num && num >= '1' && num <= '4') {
                 event.preventDefault();
                 if(currentMode !== 'B') switchMode('B'); 
@@ -820,17 +823,36 @@
             if (event.key >= '1' && event.key <= '4') {
                 event.preventDefault(); addListFromModeB(parseInt(event.key)); return;
             }
-            if (event.key === 'Enter' || event.key === ' ') {
-                event.preventDefault(); let id = document.activeElement.getAttribute('data-id');
-                if(id) addListFromModeB(parseInt(id), event.shiftKey); return;
-            }
         }
 
-        if (event.key === 'Tab') { event.preventDefault(); return; }
+        // 4. Space = 결정/추가 (모드 무관)
+        if (event.key === ' ') {
+            event.preventDefault();
+            if (currentMode === 'A') {
+                addListFromModeA();
+            } else {
+                // 카드 포커스 시 해당 카드 추가, 아니면 아무 동작 없음
+                let card = document.activeElement;
+                if (card.classList && card.classList.contains('dash-card')) {
+                    let id = card.getAttribute('data-id');
+                    if(id) addListFromModeB(parseInt(id));
+                }
+            }
+            return;
+        }
 
+        // 5. Tab = 이전 항목 이동
+        if (event.key === 'Tab') {
+            event.preventDefault();
+            moveFocus(-1);
+            return;
+        }
+
+        // 6. Enter / ArrowDown = 다음 항목 이동
         if (event.key === 'Enter' || event.key === 'ArrowDown') {
             event.preventDefault(); moveFocus(1); return;
         }
+        // 7. ArrowUp = 이전 항목 이동
         if (event.key === 'ArrowUp') {
             event.preventDefault(); moveFocus(-1); return;
         }
@@ -848,10 +870,6 @@
                 }
             }
             return;
-        }
-
-        if (event.key === ' ' && currentMode === 'A') {
-            if (event.target.tagName === 'INPUT') { event.preventDefault(); addListFromModeA(); }
         }
 
         if (event.key === 'Delete') {

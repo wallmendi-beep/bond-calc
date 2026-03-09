@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "tauri-bond",
+  "productName": "국민주택채권계산기",
   "version": "0.1.0",
   "identifier": "com.jhlee.bondcalc",
   "build": {
@@ -11,7 +11,7 @@
   "app": {
     "windows": [
       {
-        "title": "tauri-bond",
+        "title": "국민주택채권계산기 v1.6.2",
         "width": 800,
         "height": 600,
         "resizable": true,

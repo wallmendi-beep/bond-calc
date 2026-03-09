@@ -193,16 +193,30 @@
         
         /* 인쇄 모드 */
         @media print {
-            body { background: white; height: auto; overflow: visible; display: block; }
-            .wrapper { width: 100%; max-width: none; min-width: 0 !important; }
-            .container { display: block; width: 100%; }
-            .header-row, .input-box, button, .header-btn-group { display: none !important; }
-            .box { box-shadow: none; border: none; padding: 0; overflow: visible; }
-            .list-box { flex: none; width: 100%; }
+            html, body { 
+                height: auto !important; 
+                overflow: visible !important; 
+                margin: 0 !important; 
+                padding: 0 !important;
+                display: block !important;
+            }
+            body { background: white; }
+            .wrapper { 
+                display: block !important; 
+                width: 100% !important; 
+                max-width: none !important; 
+                min-width: 0 !important; 
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            .container { display: block !important; width: 100% !important; }
+            .header-row, .input-box, button, .header-btn-group, .b-footer-info { display: none !important; }
+            .box { box-shadow: none !important; border: none !important; padding: 0 !important; overflow: visible !important; display: block !important; }
+            .list-box { flex: none !important; width: 100% !important; display: block !important; }
             .print-header { display: block !important; text-align: center; border-bottom: 2px solid #000; margin-bottom: 20px; }
             .print-title { font-size: 22pt; font-weight: bold; }
             .print-footer { display: block !important; margin-top: 30px; text-align: right; font-style: italic; }
-            .list-table { border: 1px solid #000; }
+            .list-table { border: 1px solid #000; width: 100% !important; table-layout: auto !important; }
             .list-table th, .list-table td { border: 1px solid #000; padding: 5px; color: black; }
         }
         /* --- [유틸리티 클래스] --- */

@@ -786,25 +786,25 @@
     // --- [강력해진 전역 키보드 제어] ---
     document.addEventListener('keydown', function(event) {
         
-        // 1. Alt + 숫자키 (1~4): 즉시 추가
+        // 1. Shift + 숫자키 (1~4): 전원 입력 (일괄 반영) — 최우선 처리
+        if (event.shiftKey && !event.altKey && !event.ctrlKey && event.code.startsWith('Digit')) {
+            const num = event.code.replace('Digit', '');
+            if (num >= '1' && num <= '4') {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                if(currentMode !== 'B') switchMode('B');
+                addListFromModeB(parseInt(num), true);
+                return;
+            }
+        }
+
+        // 2. Alt + 숫자키 (1~4): 즉시 추가
         if (event.altKey && event.code.startsWith('Digit')) {
             const num = event.code.replace('Digit', '');
             if (num >= '1' && num <= '4') {
                 event.preventDefault();
                 if(currentMode !== 'B') switchMode('B'); 
                 addListFromModeB(parseInt(num));
-                return;
-            }
-        }
-
-        // 2. Shift + 숫자키 (1~4): 전원 입력 (일괄 반영)
-        // 입력창 내부가 아닐 때만 작동
-        if (event.shiftKey && event.code.startsWith('Digit') && event.target.tagName !== 'INPUT') {
-            const num = event.code.replace('Digit', '');
-            if (num >= '1' && num <= '4') {
-                event.preventDefault(); 
-                if(currentMode !== 'B') switchMode('B');
-                addListFromModeB(parseInt(num), true);
                 return;
             }
         }

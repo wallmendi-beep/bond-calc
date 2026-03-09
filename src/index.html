@@ -459,7 +459,7 @@
                 <h3 class="m-0 color-main">산출 목록</h3>
                 <div class="flex-gap5">
                     <button class="btn-copy" id="copyBtn" onclick="copyForCorrection()">📋 결과 복사(Ctrl+C)</button>
-                    <button onclick="window.print()" class="btn-print">🖨️ 인쇄</button>
+                    <button onclick="printResult()" class="btn-print">🖨️ 인쇄</button>
                 </div>
             </div>
 
@@ -817,6 +817,52 @@
             btn.innerText = "✅ 복사 완료!"; btn.style.backgroundColor = "var(--accent-color)";
             setTimeout(() => { btn.innerText = origin; btn.style.backgroundColor = "#6c757d"; }, 1000);
         });
+    }
+
+    // --- [인쇄: 새 팝업 창 방식 (구형 브라우저 호환)] ---
+    function printResult() {
+        if (list.length === 0) { alert('인쇄할 내역이 없습니다.'); return; }
+        let grand = 0;
+        let groups = { 'special': [], 'other': [] };
+        list.forEach((item, idx) => { item.idx = idx; if(item.regionCode === 'special') groups.special.push(item); else groups.other.push(item); });
+
+        let tableHtml = '';
+        function drawGroup(name, items) {
+            if(items.length === 0) return;
+            tableHtml += '<tr><td colspan="3" style="background:#e3f2fd; font-weight:bold; padding:8px; border-left:5px solid #0056b3;">■ ' + name + '</td></tr>';
+            items.forEach(item => {
+                grand += item.bond;
+                let plainDetail = item.detail.replace(/<br>/g, ' / ');
+                tableHtml += '<tr>';
+                tableHtml += '<td style="padding:6px; border:1px solid #333;">' + item.desc + '<br><span style="font-size:10pt; opacity:0.7;">' + item.shareText + '</span></td>';
+                tableHtml += '<td style="padding:6px; border:1px solid #333; text-align:left;">' + plainDetail + '</td>';
+                tableHtml += '<td style="padding:6px; border:1px solid #333; text-align:right; font-weight:bold;">' + item.bond.toLocaleString() + '</td>';
+                tableHtml += '</tr>';
+            });
+        }
+        drawGroup('특별시 / 광역시 등', groups.special);
+        drawGroup('기타 지역 (시/군)', groups.other);
+
+        let now = new Date();
+        let dateStr = now.getFullYear() + '-' + (now.getMonth()+1) + '-' + now.getDate() + ' ' + now.getHours() + ':' + String(now.getMinutes()).padStart(2,'0');
+
+        let html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>국민주택채권 산출내역서</title></head><body style="font-family:Malgun Gothic,sans-serif; margin:30px; color:#000;">';
+        html += '<h2 style="text-align:center; border-bottom:2px solid #000; padding-bottom:10px;">국민주택채권 매입 산출내역서</h2>';
+        html += '<p style="text-align:right; font-size:10pt;">출력일시: ' + dateStr + '</p>';
+        html += '<table style="width:100%; border-collapse:collapse; font-size:11pt;">';
+        html += '<thead><tr style="background:#f0f0f0;"><th style="padding:8px; border:1px solid #333; width:20%;">구분</th><th style="padding:8px; border:1px solid #333; width:50%;">산출 내역</th><th style="padding:8px; border:1px solid #333; width:30%;">매입액</th></tr></thead>';
+        html += '<tbody>' + tableHtml + '</tbody>';
+        html += '<tfoot><tr><td colspan="2" style="padding:10px; border:1px solid #333; text-align:right; font-weight:bold; font-size:13pt;">총 합계</td>';
+        html += '<td style="padding:10px; border:1px solid #333; text-align:right; font-weight:bold; font-size:13pt; color:#d9534f;">' + grand.toLocaleString() + ' 원</td></tr></tfoot>';
+        html += '</table>';
+        html += '<p style="text-align:right; font-style:italic; margin-top:20px; font-size:9pt;">Designed by J.H. Lee</p>';
+        html += '</body></html>';
+
+        let printWin = window.open('', '_blank', 'width=800,height=600');
+        printWin.document.write(html);
+        printWin.document.close();
+        printWin.focus();
+        setTimeout(function() { printWin.print(); printWin.close(); }, 300);
     }
 
     // --- [강력해진 전역 키보드 제어] ---

@@ -858,6 +858,12 @@
         html += '<p style="text-align:right; font-style:italic; margin-top:20px; font-size:9pt;">Designed by J.H. Lee</p>';
         html += '</body></html>';
 
+        // 타우리 앱이면 기존 window.print() 사용 (WebView2에서는 팝업이 차단됨)
+        if (window.__TAURI__) {
+            window.print();
+            return;
+        }
+
         let printWin = window.open('', '_blank', 'width=800,height=600');
         printWin.document.write(html);
         printWin.document.close();

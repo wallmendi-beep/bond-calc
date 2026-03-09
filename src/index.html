@@ -795,30 +795,18 @@
             return null;
         }
 
-        // 1. Shift + 숫자키 (1~4): 전원 입력 (일괄 반영) — 최우선 처리
-        if (event.shiftKey && !event.altKey && !event.ctrlKey) {
-            const num = getDigit(event);
-            if (num && num >= '1' && num <= '4') {
-                event.preventDefault();
-                event.stopImmediatePropagation();
-                if(currentMode !== 'B') switchMode('B');
-                addListFromModeB(parseInt(num), true);
-                return;
-            }
-        }
-
-        // 2. Alt + 숫자키 (1~4): 즉시 추가
+        // 1. Alt + 숫자키 (1~4): 전원 일괄 추가 (넘패드 포함)
         if (event.altKey) {
             const num = getDigit(event);
             if (num && num >= '1' && num <= '4') {
                 event.preventDefault();
                 if(currentMode !== 'B') switchMode('B'); 
-                addListFromModeB(parseInt(num));
+                addListFromModeB(parseInt(num), true);
                 return;
             }
         }
 
-        // 3. 카드 포커스 상태에서 숫자키만 누를 때 (Shift/Alt 없이)
+        // 2. 카드 포커스 상태에서 숫자키 (1~4): 개별 1건 추가
         if (!event.shiftKey && !event.altKey && !event.ctrlKey && currentMode === 'B' && document.activeElement.classList.contains('dash-card')) {
             if (event.key >= '1' && event.key <= '4') {
                 event.preventDefault(); addListFromModeB(parseInt(event.key)); return;

@@ -11,7 +11,7 @@
   "app": {
     "windows": [
       {
-        "title": "국민주택채권계산기 v1.6.2",
+        "title": "국민주택채권계산기 v1.7",
         "width": 800,
         "height": 600,
         "resizable": true,

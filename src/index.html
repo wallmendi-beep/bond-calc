@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>국민주택채권 계산기 v1.6.2</title>
+    <title>국민주택채권 계산기 v1.7</title>
     
     <link rel="icon" type="image/png" href="https://img.icons8.com/color/480/courthouse.png">
 
@@ -280,14 +280,168 @@
         .fraction-span { font-size: 13px; font-weight: bold; color: var(--text-sub); white-space: nowrap; }
         .input-fraction { text-align: center; width: 100%; padding: 12px 5px; }
         .btn-all-add { background: var(--accent-color); color: white; margin-top: 6px; }
+
+        /* --- [챗봇 UI 스타일] --- */
+        #chatbot-fab {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            width: 55px;
+            height: 55px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transition: all 0.2s ease-in-out;
+            z-index: 1000;
+        }
+        #chatbot-fab:hover {
+            transform: scale(1.1);
+            filter: brightness(110%);
+        }
+
+        #chatbot-window {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            width: 370px;
+            height: 500px;
+            background-color: var(--bg-box);
+            border-radius: 16px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.15);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            z-index: 1001;
+            transition: all 0.3s;
+        }
+
+        #chatbot-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: var(--bg-body);
+            border-bottom: 1px solid var(--border-color);
+        }
+        #chatbot-header h3 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+        #chatbot-close-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--text-sub);
+            cursor: pointer;
+        }
+
+        #chat-messages {
+            flex-grow: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .message {
+            padding: 10px 15px;
+            border-radius: 18px;
+            max-width: 85%;
+            font-size: 14px;
+            line-height: 1.5;
+            word-wrap: break-word;
+        }
+
+        .bot-message {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            border-bottom-left-radius: 4px;
+            align-self: flex-start;
+        }
+
+        .user-message {
+            background-color: var(--primary-color);
+            color: white;
+            border-bottom-right-radius: 4px;
+            align-self: flex-end;
+        }
+
+        .loading-message {
+            align-self: flex-start;
+        }
+        .loading-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--text-sub);
+            animation: loading-blink 1.4s infinite both;
+        }
+        .loading-dot:nth-child(2) { animation-delay: 0.2s; }
+        .loading-dot:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes loading-blink {
+            0% { opacity: 0.2; }
+            20% { opacity: 1; }
+            100% { opacity: 0.2; }
+        }
+
+        #chatbot-input-form {
+            display: flex;
+            padding: 15px;
+            border-top: 1px solid var(--border-color);
+            gap: 10px;
+        }
+        #chatbot-input {
+            flex-grow: 1;
+            border: 1px solid var(--border-color);
+            background-color: var(--input-bg);
+            color: var(--input-text);
+            border-radius: 20px;
+            padding: 10px 15px;
+            font-size: 14px;
+        }
+        #chatbot-input:focus {
+            outline: none;
+            border-color: var(--focus-ring);
+            box-shadow: 0 0 0 3px rgba(38, 132, 255, 0.2);
+        }
+        [data-theme="dark"] #chatbot-input:focus {
+            box-shadow: 0 0 0 3px rgba(100, 181, 246, 0.2);
+        }
+
+        #chatbot-input-form button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
     </style>
 </head>
-<body>
 
 <div class="wrapper">
     <div class="header-row">
         <div class="title-group">
-            <h1 class="app-title">국민주택채권 계산기 v1.6.2</h1>
+            <h1 class="app-title">국민주택채권 계산기 v1.7</h1>
             <div class="designer-sign">Designed by J.H. Lee</div>
         </div>
         
@@ -405,22 +559,22 @@
 
                 <!-- 4개 결과 동시 송출 대시보드 -->
                 <div class="dash-grid" id="B_dashboard">
-                    <div class="dash-card" tabindex="0" data-id="1" onclick="addListFromModeB(1, event.shiftKey)">
+                    <div class="dash-card" tabindex="0" data-id="1" onclick="addListFromModeB(1, event.altKey)">
                         <div class="title">🏠 주택 <span class="shortcut">1</span></div>
                         <div class="val" id="B_res1">0 원</div>
                     </div>
-                    <div class="dash-card" tabindex="0" data-id="2" onclick="addListFromModeB(2, event.shiftKey)">
+                    <div class="dash-card" tabindex="0" data-id="2" onclick="addListFromModeB(2, event.altKey)">
                         <div class="title">🌳 토지 <span class="shortcut">2</span></div>
                         <div class="val" id="B_res2">0 원</div>
                     </div>
-                    <div class="dash-card" tabindex="0" data-id="3" onclick="addListFromModeB(3, event.shiftKey)">
+                    <div class="dash-card" tabindex="0" data-id="3" onclick="addListFromModeB(3, event.altKey)">
                         <div class="title">🏢 건물 <span class="shortcut">3</span></div>
                         <div class="val" id="B_res3">0 원</div>
                     </div>
                     
                     <!-- 점진적 전환 UI: 증여/부담부증여 카드 묶음 -->
                     <div class="flex-col-gap8">
-                        <div class="dash-card" tabindex="0" data-id="4" onclick="addListFromModeB(4, event.shiftKey)" id="B_card4">
+                        <div class="dash-card" tabindex="0" data-id="4" onclick="addListFromModeB(4, event.altKey)" id="B_card4">
                             <div class="title" id="B_title4">🎁 증여(무상) <span class="shortcut">4</span></div>
                             <div class="val" id="B_res4">0 원</div>
                         </div>
@@ -431,7 +585,7 @@
                             <input type="text" id="B_debtAmount" placeholder="금액 입력" inputmode="numeric" class="text-right w-220" onfocus="this.select()" oninput="formatNum(this); calcModeB();">
                         </div>
                         
-                        <!-- [v1.6.2 최종 추가] 부담부증여 시 부동산 종류 선택 라디오 (채무액 있을 때만 나타남) -->
+                        <!-- [v1.7 최종 추가] 부담부증여 시 부동산 종류 선택 라디오 (채무액 있을 때만 나타남) -->
                         <div id="B_burdenPropTypeArea" class="hidden dash-burden-prop-area mt-4">
                             <div class="radio-group m-0 burden-radio-group">
                                 <label class="radio-label"><input type="radio" name="B_burdenPropType" value="house" onchange="calcModeB()">🏠 주택</label>
@@ -477,6 +631,22 @@
             <div class="print-footer">Designed by J.H. Lee</div>
         </div>
     </div>
+</div>
+
+<!-- Chatbot UI -->
+<div id="chatbot-fab">💬</div>
+<div id="chatbot-window" style="display: none;">
+  <div id="chatbot-header">
+    <h3>Bond-Bot</h3>
+    <button id="chatbot-close-btn">X</button>
+  </div>
+  <div id="chat-messages">
+    <div class="message bot-message">안녕하세요! 채권 계산기 사용법에 대해 무엇이든 물어보세요.</div>
+  </div>
+  <form id="chatbot-input-form">
+    <input type="text" id="chatbot-input" placeholder="메시지 입력..." autocomplete="off" />
+    <button type="submit">전송</button>
+  </form>
 </div>
 
 <script>
@@ -726,7 +896,7 @@
         let card4 = document.getElementById('B_card4');
         let burdenPropArea = document.getElementById('B_burdenPropTypeArea');
 
-        // [v1.6.2 최종 업데이트] 채무액 존재 여부에 따라 라디오 표시 및 요율 선택 적용
+        // [v1.7 최종 업데이트] 채무액 존재 여부에 따라 라디오 표시 및 요율 선택 적용
         if (debt > 0) {
             burdenPropArea.classList.remove('hidden');
             let bProp = getRadio('B_burdenPropType');
@@ -991,7 +1161,7 @@
             document.getElementById('B_debtAmount')
         ];
         
-        // [v1.6.2 최종 업데이트] 부담부증여 라디오 버튼이 보이면 포커스 이동 경로에 추가
+        // [v1.7 최종 업데이트] 부담부증여 라디오 버튼이 보이면 포커스 이동 경로에 추가
         if (!document.getElementById('B_burdenPropTypeArea').classList.contains('hidden')) {
             seqB.push(document.querySelector('input[name="B_burdenPropType"]:checked'));
         }
@@ -1009,6 +1179,77 @@
         else if (nextIdx >= sequence.length) sequence[0].focus();
         else if (nextIdx < 0) sequence[sequence.length - 1].focus();
     }
+
+    // --- Chatbot UI Logic ---
+    const chatbotFab = document.getElementById('chatbot-fab');
+    const chatbotWindow = document.getElementById('chatbot-window');
+    const chatbotCloseBtn = document.getElementById('chatbot-close-btn');
+    const chatMessages = document.getElementById('chat-messages');
+    const chatbotInputForm = document.getElementById('chatbot-input-form');
+    const chatbotInput = document.getElementById('chatbot-input');
+    const { invoke } = window.__TAURI__.core;
+
+    // Open chat window
+    chatbotFab.addEventListener('click', () => {
+        chatbotWindow.style.display = 'flex';
+        chatbotFab.style.display = 'none';
+        chatbotInput.focus();
+    });
+
+    // Close chat window
+    chatbotCloseBtn.addEventListener('click', () => {
+        chatbotWindow.style.display = 'none';
+        chatbotFab.style.display = 'block';
+    });
+
+    // Handle message submission
+    chatbotInputForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const messageText = chatbotInput.value.trim();
+        if (messageText === '') return;
+
+        appendMessage(messageText, 'user');
+        chatbotInput.value = '';
+        chatbotInput.focus();
+
+        const loadingEl = showLoading();
+
+        try {
+            const response = await invoke('get_chatbot_response', { message: messageText });
+            hideLoading(loadingEl);
+            appendMessage(response, 'bot');
+        } catch (error) {
+            hideLoading(loadingEl);
+            appendMessage('오류가 발생했습니다. 잠시 후 다시 시도해 주세요.', 'bot');
+            console.error('Chatbot invoke error:', error);
+        }
+    });
+
+    function appendMessage(text, type) {
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add('message', `${type}-message`);
+        messageDiv.textContent = text;
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function showLoading() {
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add('message', 'bot-message', 'loading-message');
+        messageDiv.innerHTML = '<span class="loading-dot"></span><span class="loading-dot"></span><span class="loading-dot"></span>';
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        return messageDiv;
+    }
+
+    function hideLoading(element) {
+        if (element) {
+            element.remove();
+        }
+    }
+
+    // Initial state
+    chatbotFab.style.display = 'block';
+    chatbotWindow.style.display = 'none';
 </script>
 </body>
-</html>

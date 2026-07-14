@@ -277,8 +277,8 @@
         .print-date-style { font-size: 12px; text-align: right; }
         .color-main { color: var(--text-main); }
         .btn-print { background: var(--accent-color); color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; }
-        .fraction-span { font-size: 13px; font-weight: bold; color: var(--text-sub); white-space: nowrap; }
-        .input-fraction { text-align: center; width: 100%; padding: 12px 5px; }
+        .fraction-span { font-size: 13px; font-weight: bold; color: var(--text-sub); white-space: nowrap; flex-shrink: 0; }
+        .input-fraction { text-align: center; width: 100%; padding: 12px 6px; flex: 1 1 0; min-width: 0; box-sizing: border-box; }
         .btn-all-add { background: var(--accent-color); color: white; margin-top: 6px; }
 
         /* --- [챗봇 UI 스타일] --- */
@@ -542,13 +542,13 @@
                     </div>
 
                     <div class="input-section flex-gap10">
-                        <div class="flex-2">
+                        <div class="flex-1">
                             <label>2. 시가표준액 (전체)</label>
                             <input type="text" id="B_totalAmount" placeholder="금액 입력" inputmode="numeric" onfocus="this.select()" oninput="formatNum(this); calcModeB();">
                         </div>
                         <div class="flex-1">
                             <label>지분 (단독=1분의 1)</label>
-                            <div class="flex-center">
+                            <div class="flex-center w-100">
                                 <input type="text" inputmode="numeric" id="B_den" aria-label="지분 분모" value="1" class="input-fraction" onfocus="this.select()" oninput="cleanFraction(this); calcModeB();" onblur="blurFraction(this); calcModeB();">
                                 <span class="fraction-span">분의</span>
                                 <input type="text" inputmode="numeric" id="B_num" aria-label="지분 분자" value="1" class="input-fraction" onfocus="this.select()" oninput="cleanFraction(this); calcModeB();" onblur="blurFraction(this); calcModeB();">
